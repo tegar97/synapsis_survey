@@ -27,8 +27,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(surfaceTintColor: const Color.fromRGBO(0, 0, 0, 0),
-
+      appBar: AppBar(
+          surfaceTintColor: const Color.fromRGBO(0, 0, 0, 0),
           backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
@@ -37,7 +37,6 @@ class _HomePageState extends State<HomePage> {
             style: appTitleTextStyle,
           ),
           actions: [
-           
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                   primary: Colors.white,
@@ -63,10 +62,8 @@ class _HomePageState extends State<HomePage> {
             if (state is SurveryLoaded) {
               // Jika berhasil memuat data, tampilkan daftar survei
               return ListView.builder(
-                padding: EdgeInsets.symmetric(
-                horizontal: defPadding,
-                vertical: 16
-                ),
+                padding:
+                    EdgeInsets.symmetric(horizontal: defPadding, vertical: 16),
                 itemCount: state.data.length,
                 itemBuilder: (context, index) {
                   final survey = state.data[index];

@@ -6,6 +6,7 @@ import 'package:synapsis_survey/features/auth/presentation/pages/login_page.dart
 import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_bloc.dart';
 import 'package:synapsis_survey/features/survey/bloc/survey_bloc.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/question_number_cubic.dart';
+import 'package:synapsis_survey/features/survey/presentation/bloc/timer_cubit.dart';
 import 'package:synapsis_survey/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-       BlocProvider(create: (context) => QuestionNumberCubit()),
+        BlocProvider(create: (context) => QuestionNumberCubit()),
+        BlocProvider(create: (context) => TimerCubit(6000)),
         BlocProvider(create: (_) => locator<AuthBloc>()),
         BlocProvider(create: (_) => locator<SurveyBloc>()),
         BlocProvider(create: (_) => locator<SurveyQuestionBloc>()),

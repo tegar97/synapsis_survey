@@ -15,4 +15,8 @@ class QuestionNumberCubit extends Cubit<int> {
   clearNumberQuestion() {
     emit(0);
   }
+
+  jumpToQuestion(int number){
+    emit(number);
+  }
 }

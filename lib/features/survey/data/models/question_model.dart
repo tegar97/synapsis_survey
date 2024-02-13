@@ -60,7 +60,7 @@ class OptionModel extends OptionEntity {
   factory OptionModel.fromJson(Map<String, dynamic> json) {
     return OptionModel(
         optionid: json['optionid'] ?? '',
-        optionName: json['optionName'] ?? '',
+        optionName: json['option_name'] ?? '',
         points: json['points'] ?? '',
         flag: json['flag'] ?? '');
   }
