@@ -70,7 +70,7 @@ class RoundedOutlineButton extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
-                side: BorderSide(color: color, width: 2))),
+                side: BorderSide(color: color, width: 1.5))),
       ),
     );
   }
