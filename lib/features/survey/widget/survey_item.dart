@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:svg_flutter/svg.dart';
+import 'package:synapsis_survey/common/app_route.dart';
 import 'package:synapsis_survey/common/formatter.dart';
 import 'package:synapsis_survey/common/theme.dart';
 import 'package:synapsis_survey/features/survey/domain/entities/survey_entity.dart';
@@ -13,7 +14,10 @@ class Surveyitem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => (),
+      onTap: () => {
+        Navigator.pushNamed(context, AppRoute.surveyQuestion,
+            arguments: survey.id)
+      },
       borderRadius: BorderRadius.circular(4),
       child: Container(
           margin: EdgeInsets.only(bottom: 16),

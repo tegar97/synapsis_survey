@@ -10,4 +10,6 @@ class CheckLoginUseCase {
   Future<Either<Failure, bool>> call() {
     return _repository.checkIsLogin();
   }
+
+  
 }

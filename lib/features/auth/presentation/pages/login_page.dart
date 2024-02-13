@@ -153,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                       if (_formKey.currentState!.validate()) {
                           context
                           .read<AuthBloc>()
-                          .add(OnAuthLogin(nik: nik, password: password));
+                          .add(OnAuthLogin(nik: nik, password: password,rememberSession :rememberMe ));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

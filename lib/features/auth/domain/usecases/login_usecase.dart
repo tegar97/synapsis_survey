@@ -9,7 +9,7 @@ class LoginUseCase {
   LoginUseCase(this._repository);
 
   Future<Either<Failure, UserEntity>> call(
-      {required String nik, required String password}) {
-    return _repository.login(nik, password);
+      {required String nik, required String password ,  required bool rememberSession}  ) {
+    return _repository.login(nik, password,rememberSession);
   }
 }

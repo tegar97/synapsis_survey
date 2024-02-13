@@ -20,13 +20,16 @@ class AuthRepositoryImpl extends AuthRepository {
       required this.localDataSource});
 
   @override
-  Future<Either<Failure, UserEntity>> login(String nik, String password) async {
+  Future<Either<Failure, UserEntity>> login(String nik, String password,bool rememberSession) async {
     bool online = await networkInfo.isConnected();
     if (online) {
       try {
         final result = await remoteDataSource.login(nik, password);
+
+        if(rememberSession==true){
         await localDataSource.saveUserData(result);
-        print(result.toEntity);
+
+        }
 
         return Right(result.toEntity);
       } on TimeoutException {

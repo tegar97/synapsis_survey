@@ -16,10 +16,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._loginUseCase, this._checkLoginUseCase, this._logoutUseCase)
       : super(AuthInitial()) {
     on<OnAuthLogin>((event, emit) async {
-      print('riggger');
       emit(AuthLoading());
       final result =
-          await _loginUseCase(nik: event.nik, password: event.password);
+          await _loginUseCase(nik: event.nik, password: event.password,rememberSession: event.rememberSession);
   
       result.fold(
         (failure) => emit(AuthFailure(failure.message)),
