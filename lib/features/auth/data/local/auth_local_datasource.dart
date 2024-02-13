@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:synapsis_survey/features/auth/data/models/user_model.dart';
 import 'package:synapsis_survey/features/auth/domain/entities/user_entitiy.dart';

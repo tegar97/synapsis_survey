@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:synapsis_survey/common/app_route.dart';
+import 'package:synapsis_survey/common/theme.dart';
 import 'package:synapsis_survey/features/auth/bloc/bloc/auth_bloc.dart';
 import 'package:synapsis_survey/features/auth/presentation/pages/login_page.dart';
+import 'package:synapsis_survey/features/survey/bloc/survey_bloc.dart';
 import 'package:synapsis_survey/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,14 +23,13 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => locator<AuthBloc>()),
+        BlocProvider(create: (_) => locator<SurveyBloc>()),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
         theme: ThemeData(
-             useMaterial3: true,
-          textTheme:  GoogleFonts.interTextTheme(),
-          scaffoldBackgroundColor: Colors.white
-        ),
+            primaryColor: primaryColor,
+            textTheme: GoogleFonts.interTextTheme(),
+            scaffoldBackgroundColor: Colors.white),
         initialRoute: AppRoute.login,
         onGenerateRoute: AppRoute.onGenerateRoute,
         home: const LoginPage(),
