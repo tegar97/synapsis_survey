@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -8,6 +10,7 @@ import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_bloc
 import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_state.dart';
 import 'package:synapsis_survey/features/survey/bloc/survey_bloc.dart';
 import 'package:synapsis_survey/features/survey/domain/entities/question_entity.dart';
+import 'package:synapsis_survey/features/survey/presentation/bloc/page_section_cubit.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/question_number_cubic.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/timer_cubit.dart';
@@ -24,13 +27,15 @@ class SurveyQuestionPage extends StatefulWidget {
 
 class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
   late List<String> sections;
+  late StreamController<int> numberCurrentIndexController;
+
   final questionNumberController = PageController();
 
   @override
   void initState() {
     super.initState();
     context.read<QuestionNumberCubit>().clearNumberQuestion();
-
+    numberCurrentIndexController = StreamController.broadcast();
     context.read<TimerCubit>().startTimer();
 
     context
@@ -41,7 +46,8 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
   @override
   void dispose() {
     context.read<QuestionNumberCubit>().clearNumberQuestion();
-    context.read<TimerCubit>().close();
+    numberCurrentIndexController.close();
+
     super.dispose();
   }
 
@@ -289,10 +295,27 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
     );
   }
 
+  StreamBuilder<int> buildStreamBuilder(
+      StreamController<int> controller, List<String> sections) {
+    return StreamBuilder<int>(
+      stream: controller.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          int currentIndex = snapshot.data!;
+          return Text(
+            sections[currentIndex],
+            style: appTitleTextStyle,
+          );
+        } else {
+          // Return a placeholder or loading indicator if data is not available yet
+          return CircularProgressIndicator();
+        }
+      },
+    );
+  }
+
   void _showCustomDialog(BuildContext context,
       List<QuestionItemEntity> questions, int stateNumber) {
-    int numberCurrentIndex = 0;
-
     List<String> sections = [];
     for (var question in questions) {
       if (!sections.contains(question.section)) {
@@ -303,9 +326,13 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
     int totalPages = questions.length;
     YYDialog().build(context)
       ..width = double.infinity
-      ..height = 350
+      ..height = 230
       ..borderRadius = 4.0
       ..gravity = Gravity.top
+      ..dismissCallBack = () {}
+      ..showCallBack = () {
+        numberCurrentIndexController.sink.add(0);
+      }
       ..widget(Padding(
         padding: EdgeInsets.all(defPadding),
         child: Column(
@@ -316,12 +343,15 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Builder(builder: (context) {
-                    return Text(
-                      '${numberCurrentIndex}',
-                      style: appTitleTextStyle,
-                    );
-                  }),
+                  // buildStreamBuilder(numberCurrentIndexController, sections),
+                  BlocBuilder<PageSectionCubit, int>(
+                    builder: (context, state) {
+                      return Text(
+                        sections[state],            style: appTitleTextStyle,
+
+                      );
+                    },
+                  ),
                   AspectRatio(
                     aspectRatio: 3,
                     child: PageView.builder(
@@ -329,8 +359,10 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
                       itemCount: sections.length,
                       onPageChanged: (int page) {
                         setState(() {
-                          numberCurrentIndex = page;
+                          numberCurrentIndexController.sink.add(page);
+                          context.read<PageSectionCubit>().changePage(page);
                         });
+                        print('page $page');
                       },
                       controller: questionNumberController,
                       itemBuilder: (context, index) {
