@@ -4,6 +4,8 @@ import 'package:dartz/dartz.dart';
 import 'package:synapsis_survey/core/error/excpetion.dart';
 import 'package:synapsis_survey/core/error/failures.dart';
 import 'package:synapsis_survey/core/platform/network_info_interface.dart';
+import 'package:synapsis_survey/features/auth/data/local/auth_local_datasource.dart';
+import 'package:synapsis_survey/features/auth/domain/entities/user_entitiy.dart';
 import 'package:synapsis_survey/features/survey/data/models/question_model.dart';
 import 'package:synapsis_survey/features/survey/data/remote/survey_remote_datasource.dart';
 import 'package:synapsis_survey/features/survey/domain/entities/question_entity.dart';
@@ -13,16 +15,19 @@ import 'package:synapsis_survey/features/survey/domain/repositories/survey_repos
 class SurveyRepositoryImpl extends SurveyRepository {
   final NetworkInfo networkInfo;
   final SurveyRemoteDataSource remoteDataSource;
+  final AuthLocalDataSource authLocalDataSource;
 
   SurveyRepositoryImpl(
-      {required this.networkInfo, required this.remoteDataSource});
+      {required this.networkInfo, required this.remoteDataSource , required this.authLocalDataSource});
 
   @override
   Future<Either<Failure, List<SurveyEntity>>> get() async {
     bool online = await networkInfo.isConnected();
     if (online) {
       try {
-        final result = await remoteDataSource.get();
+        UserEntity userData = await authLocalDataSource.getUserData();
+        print('tokennn dari repo ${userData.token}');
+        final result = await remoteDataSource.get(userData.token);
         // await localDataSource.cachedAll(result);
         return Right(result.map((e) => e.toEntity).toList());
       } on TimeoutException {
@@ -41,11 +46,14 @@ class SurveyRepositoryImpl extends SurveyRepository {
   }
 
   @override
-  Future<Either<Failure, QuestionEntity>> getSurveyQuestion(String surveyId) async{
+  Future<Either<Failure, QuestionEntity>> getSurveyQuestion(
+      String surveyId) async {
     bool online = await networkInfo.isConnected();
     if (online) {
       try {
-        final result = await remoteDataSource.getSurveyQuestion(surveyId);
+         UserEntity userData = await authLocalDataSource.getUserData();
+        print('tokennn dari repo ${userData.token}');
+        final result = await remoteDataSource.getSurveyQuestion(surveyId ,userData.token);
         return Right(result.toEntity());
       } on TimeoutException {
         return const Left(TimeoutFailure("Timeout. No Response"));

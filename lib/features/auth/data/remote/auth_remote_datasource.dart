@@ -20,18 +20,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     Uri url = Uri.parse('${URLs.base}/login');
     final response =
         await client.post(url, body: {'nik': nik, 'password': password});
-    
-    
-    print(response);
-    if (response.statusCode == 200) {
-      print("oiiii");
-      UserModel userData =
-          UserModel.fromJson(jsonDecode(response.body)['data']);
 
+    String rawCookies = response.headers['set-cookie'] ?? '';
+    print(rawCookies);
+    List<String> cookies = rawCookies.split(';');
+
+    String token = '';
+
+    for (String cookie in cookies) {
+      if (cookie.trim().startsWith('token')) {
+        token = cookie.split('=')[1];
+      } 
+    }
+
+    print("token: $token");
+
+    if (response.statusCode == 200) {
+      UserModel userData =
+          UserModel.fromJson(jsonDecode(response.body)['data'],token: token);
       return userData;
     } else if (response.statusCode == 404) {
       Map body = jsonDecode(response.body);
-
       throw NotFoundException(body['message']);
     } else {
       throw ServerException();

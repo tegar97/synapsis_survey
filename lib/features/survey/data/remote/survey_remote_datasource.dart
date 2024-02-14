@@ -7,8 +7,8 @@ import 'package:synapsis_survey/features/survey/data/models/question_model.dart'
 import 'package:synapsis_survey/features/survey/data/models/survey_model.dart';
 
 abstract class SurveyRemoteDataSource {
-  Future<List<SurveyModel>> get();
-  Future<QuestionModel> getSurveyQuestion(String surveyId);
+  Future<List<SurveyModel>> get(String? token);
+  Future<QuestionModel> getSurveyQuestion(String surveyId,String? token);
 }
 
 class SurveyRemoteDataSourceImpl implements SurveyRemoteDataSource {
@@ -17,12 +17,11 @@ class SurveyRemoteDataSourceImpl implements SurveyRemoteDataSource {
   SurveyRemoteDataSourceImpl(this.client);
 
   @override
-  Future<List<SurveyModel>> get() async {
+  Future<List<SurveyModel>> get(String? token) async {
     Uri url = Uri.parse('${URLs.base}/assessments');
-    final response = await client.get(url, headers: {
-      'Cookie':
-          'refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlX2lkIjoiIiwicGVybWlzc2lvbnMiOm51bGwsImV4cCI6MTcxMDM5MTU0NiwiaXNzIjoiU1lOMTAifQ.myCYuTc4xKM9jIogNnldAzEpEy3nzBZJuwThLaPUKh0; token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlX2lkIjoiNCIsInBlcm1pc3Npb25zIjpbMTMwLDEzMywxMzUsMTM4LDE0MiwxNTQsMSwyLDMsNCw1LDYsOSwxMSwxMiwxMywxNywxMCw4XSwiZXhwIjoxNzA3ODg1OTQ2LCJpc3MiOiJTWU4xMCJ9.ZxBaVV8byNr-caARKIMkc01sEfmrdHFgRYlmfsiQOJk'
-    }).timeout(Duration(seconds: 6));
+    print("token dari remotedataousce survey $token");
+    final response = await client.get(url,
+        headers: {'Cookie': 'token=$token'}).timeout(Duration(seconds: 6));
 
     if (response.statusCode == 200) {
       List list = jsonDecode(response.body)['data'];
@@ -38,11 +37,11 @@ class SurveyRemoteDataSourceImpl implements SurveyRemoteDataSource {
   }
 
   @override
-  Future<QuestionModel> getSurveyQuestion(String surveyId) async {
+  Future<QuestionModel> getSurveyQuestion(String surveyId , String? token) async {
     Uri url = Uri.parse('${URLs.base}/assessments/question/${surveyId}');
     final response = await client.get(url, headers: {
       'Cookie':
-          'refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlX2lkIjoiIiwicGVybWlzc2lvbnMiOm51bGwsImV4cCI6MTcxMDM5MTU0NiwiaXNzIjoiU1lOMTAifQ.myCYuTc4xKM9jIogNnldAzEpEy3nzBZJuwThLaPUKh0; token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlX2lkIjoiNCIsInBlcm1pc3Npb25zIjpbMTMwLDEzMywxMzUsMTM4LDE0MiwxNTQsMSwyLDMsNCw1LDYsOSwxMSwxMiwxMywxNywxMCw4XSwiZXhwIjoxNzA3ODg1OTQ2LCJpc3MiOiJTWU4xMCJ9.ZxBaVV8byNr-caARKIMkc01sEfmrdHFgRYlmfsiQOJk'
+          'token=$token'
     }).timeout(Duration(seconds: 6));
 
     if (response.statusCode == 200) {

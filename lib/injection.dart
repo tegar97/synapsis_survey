@@ -10,6 +10,7 @@ import 'package:synapsis_survey/features/auth/data/remote/auth_remote_datasource
 import 'package:synapsis_survey/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:synapsis_survey/features/auth/domain/repositories/auth_repository.dart';
 import 'package:synapsis_survey/features/auth/domain/usecases/check_login_usecase.dart';
+import 'package:synapsis_survey/features/auth/domain/usecases/check_saved_credential_usecase.dart';
 import 'package:synapsis_survey/features/auth/domain/usecases/login_usecase.dart';
 import 'package:synapsis_survey/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_bloc.dart';
@@ -25,7 +26,7 @@ final locator = GetIt.instance;
 Future<void> initLocator() async {
   // bloc
 
-  locator.registerFactory(() => AuthBloc(locator(), locator(), locator()));
+  locator.registerFactory(() => AuthBloc(locator(), locator(), locator(),locator()));
   locator.registerFactory(() => SurveyBloc(locator()));
   locator.registerFactory(() => SurveyQuestionBloc(locator()));
 
@@ -33,6 +34,8 @@ Future<void> initLocator() async {
 
   locator.registerLazySingleton(() => LoginUseCase(locator()));
   locator.registerLazySingleton(() => CheckLoginUseCase(locator()));
+  locator.registerLazySingleton(() => CheckSavedCredentialUsecase(locator()));
+
   locator.registerLazySingleton(() => LogoutUseCase(locator()));
   locator.registerLazySingleton(() => GetAllSurveyUseCase(locator()));
   locator.registerLazySingleton(() => GetSurveyQuestionUseCase(locator()));
@@ -53,6 +56,7 @@ Future<void> initLocator() async {
   locator.registerLazySingleton<SurveyRepository>(() => SurveyRepositoryImpl(
         networkInfo: locator(),
         remoteDataSource: locator(),
+        authLocalDataSource: locator(),
       ));
   // platform
 

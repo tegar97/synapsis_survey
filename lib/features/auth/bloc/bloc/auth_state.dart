@@ -40,3 +40,15 @@ final class AuthCookie extends AuthState{
 
 
 }
+
+final class AuthCredentialSaved extends AuthState{
+
+  final CredentialEntity? credential;
+
+  const AuthCredentialSaved(this.credential);
+
+  @override
+  List<Object> get props => [credential!];
+
+
+}

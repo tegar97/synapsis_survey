@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => QuestionNumberCubit()),
         BlocProvider(create: (context) => PageSectionCubit()),
-        BlocProvider(create: (context) => TimerCubit(6000)),
+        BlocProvider(create: (context) => TimerCubit(900)),
         BlocProvider(create: (_) => locator<AuthBloc>()),
         BlocProvider(create: (_) => locator<SurveyBloc>()),
         BlocProvider(create: (_) => locator<SurveyQuestionBloc>()),

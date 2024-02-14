@@ -3,6 +3,7 @@ import 'package:synapsis_survey/features/auth/domain/entities/user_entitiy.dart'
 class UserModel extends UserEntity {
   UserModel(
       {required super.userId,
+     
       required super.nik,
       required super.systemRoleId,
       required super.systemRole,
@@ -12,9 +13,10 @@ class UserModel extends UserEntity {
       required super.departementId,
       required super.departement,
       required super.siteLocationId,
+      required super.token,
       required super.siteLocation});
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
+  factory UserModel.fromJson(Map<String, dynamic> json , {String token = ''}) {
     return UserModel(
       userId: json['user_id'],
       nik: json['nik'],
@@ -27,12 +29,14 @@ class UserModel extends UserEntity {
       departement: json['departement'],
       siteLocationId: json['site_location_id'],
       siteLocation: json['site_location'],
+      token : token
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'user_id': userId,
+      'token' : token,
       'nik': nik,
       'system_role_id': systemRoleId,
       'system_role': systemRole,
@@ -48,6 +52,7 @@ class UserModel extends UserEntity {
 
   UserEntity get toEntity => UserEntity(
         userId: userId,
+        token: token,
         nik: nik,
         systemRoleId: systemRoleId,
         systemRole: systemRole,
@@ -55,7 +60,7 @@ class UserModel extends UserEntity {
         email: email,
         phone: phone,
         departementId: departementId,
-        departement: departement ,
+        departement: departement,
         siteLocationId: siteLocationId,
         siteLocation: siteLocation,
       );

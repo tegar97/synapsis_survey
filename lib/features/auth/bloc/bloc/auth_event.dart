@@ -23,4 +23,9 @@ class OnCheckIsLogin extends AuthEvent{
 
 }
 
+class OnCheckRememberMe extends AuthEvent{
+
+}
+
+
 class OnLogout extends AuthEvent{}

@@ -6,6 +6,7 @@ import 'package:synapsis_survey/core/error/failures.dart';
 import 'package:synapsis_survey/core/platform/network_info_interface.dart';
 import 'package:synapsis_survey/features/auth/data/local/auth_local_datasource.dart';
 import 'package:synapsis_survey/features/auth/data/remote/auth_remote_datasource.dart';
+import 'package:synapsis_survey/features/auth/domain/entities/credential_entity.dart';
 import 'package:synapsis_survey/features/auth/domain/entities/user_entitiy.dart';
 import 'package:synapsis_survey/features/auth/domain/repositories/auth_repository.dart';
 
@@ -20,15 +21,18 @@ class AuthRepositoryImpl extends AuthRepository {
       required this.localDataSource});
 
   @override
-  Future<Either<Failure, UserEntity>> login(String nik, String password,bool rememberSession) async {
+  Future<Either<Failure, UserEntity>> login(
+      String nik, String password, bool rememberSession) async {
     bool online = await networkInfo.isConnected();
     if (online) {
       try {
         final result = await remoteDataSource.login(nik, password);
+          await localDataSource.saveUserData(result);
 
-        if(rememberSession==true){
-        await localDataSource.saveUserData(result);
-
+        if (rememberSession == true) {
+          await localDataSource.credentialSave(nik, password);
+        }else{
+          await localDataSource.removeCredential();
         }
 
         return Right(result.toEntity);
@@ -57,13 +61,23 @@ class AuthRepositoryImpl extends AuthRepository {
     }
   }
 
-    @override
+  @override
   Future<Either<Failure, void>> logout() async {
     try {
       final user = await localDataSource.logout();
       return Right(user);
     } catch (e) {
       return Left(ServerFailure('Check login failed'));
+    }
+  }
+
+  @override
+Future<Either<Failure, CredentialEntity?>> checkSavedCredential() async{
+     try {
+      final user = await localDataSource.getCredential();
+      return Right(user);
+    } catch (e) {
+      return Left(ServerFailure('Error get user credential'));
     }
   }
 }

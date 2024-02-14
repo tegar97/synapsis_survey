@@ -24,6 +24,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    final rememberBloc = context.read<AuthBloc>()..add(OnCheckRememberMe());
+    rememberBloc.stream.listen((state) {
+      if (state is AuthCredentialSaved) {
+        setState(() {
+          rememberMe = state.credential?.rememberMe ?? false;
+        });
+
+        if (rememberMe && state.credential != null) {
+          nikController.text = state.credential!.nik;
+          passwordController.text = state.credential!.password;
+        }
+      }
+    });
     final authBloc = context.read<AuthBloc>()..add(OnCheckIsLogin());
     authBloc.stream.listen((state) {
       if (state is AuthCookie) {
@@ -151,9 +164,10 @@ class _LoginPageState extends State<LoginPage> {
 
                       FocusManager.instance.primaryFocus?.unfocus();
                       if (_formKey.currentState!.validate()) {
-                          context
-                          .read<AuthBloc>()
-                          .add(OnAuthLogin(nik: nik, password: password,rememberSession :rememberMe ));
+                        context.read<AuthBloc>().add(OnAuthLogin(
+                            nik: nik,
+                            password: password,
+                            rememberSession: rememberMe));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -161,7 +175,6 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         );
                       }
-                    
                     },
                   );
                 },
