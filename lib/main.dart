@@ -6,6 +6,7 @@ import 'package:synapsis_survey/features/auth/presentation/pages/login_page.dart
 import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_bloc.dart';
 import 'package:synapsis_survey/features/survey/bloc/survey_bloc.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/page_section_cubit.dart';
+import 'package:synapsis_survey/features/survey/presentation/bloc/question_answer/question_answer_bloc.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/question_number_cubic.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/timer_cubit.dart';
 import 'package:synapsis_survey/injection.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => PageSectionCubit()),
         BlocProvider(create: (context) => TimerCubit(900)),
         BlocProvider(create: (_) => locator<AuthBloc>()),
+        BlocProvider(create: (_) => QuestionAnswerBloc()),
         BlocProvider(create: (_) => locator<SurveyBloc>()),
         BlocProvider(create: (_) => locator<SurveyQuestionBloc>()),
       ],

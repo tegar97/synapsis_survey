@@ -55,6 +55,8 @@ class QuestionItemEntity extends Equatable {
         questionName,
         options,
       ];
+
+      
 }
 
 class OptionEntity extends Equatable {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,11 +7,13 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:svg_flutter/svg.dart';
 import 'package:synapsis_survey/common/theme.dart';
 import 'package:synapsis_survey/common/widget/costume_button.dart';
+import 'package:synapsis_survey/features/auth/domain/entities/user_anwser.entity.dart';
 import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_bloc.dart';
 import 'package:synapsis_survey/features/survey/bloc/detail/survey_question_state.dart';
 import 'package:synapsis_survey/features/survey/bloc/survey_bloc.dart';
 import 'package:synapsis_survey/features/survey/domain/entities/question_entity.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/page_section_cubit.dart';
+import 'package:synapsis_survey/features/survey/presentation/bloc/question_answer/question_answer_bloc.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/question_number_cubic.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:synapsis_survey/features/survey/presentation/bloc/timer_cubit.dart';
@@ -28,6 +31,9 @@ class SurveyQuestionPage extends StatefulWidget {
 class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
   late List<String> sections;
   late StreamController<int> numberCurrentIndexController;
+  List<UserAnswer> userAnswers = [];
+  List<Answer> selectedOptions = [];
+  String? selectedValue;
 
   final questionNumberController = PageController();
 
@@ -35,6 +41,7 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
   void initState() {
     super.initState();
     context.read<QuestionNumberCubit>().clearNumberQuestion();
+
     numberCurrentIndexController = StreamController.broadcast();
     context.read<TimerCubit>().startTimer();
 
@@ -58,42 +65,54 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
       bottomNavigationBar: Container(
         height: 56,
         margin: EdgeInsets.symmetric(vertical: 24, horizontal: 12),
-        child: BlocBuilder<QuestionNumberCubit, int>(
-          builder: (context, stateNumber) {
-            return Row(
-              children: [
-                Expanded(
-                  child: RoundedOutlineButton(
-                    style: bodyTextStyle.copyWith(
-                        fontSize: 15,
+        child: BlocBuilder<SurveyQuestionBloc, SurveyQuestionState>(
+          builder: (context, state) {
+            return BlocBuilder<QuestionNumberCubit, int>(
+              builder: (context, stateNumber) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: RoundedOutlineButton(
+                        style: bodyTextStyle.copyWith(
+                            fontSize: 15,
+                            color: primaryColor,
+                            fontWeight: FontWeight.w700),
+                        title: "Back",
+                        width: double.infinity,
                         color: primaryColor,
-                        fontWeight: FontWeight.w700),
-                    title: "Back",
-                    width: double.infinity,
-                    color: primaryColor,
-                    onClick: () {
-                      if (stateNumber >= 1) {
-                        context
-                            .read<QuestionNumberCubit>()
-                            .getPreviousQuestion();
-                      }
-                    },
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: RoundedButton(
-                    style: bodyTextStyle.copyWith(
-                        fontSize: 15, color: Colors.white),
-                    title: "Next",
-                    width: double.infinity,
-                    background: primaryColor,
-                    onClick: () {
-                      context.read<QuestionNumberCubit>().getNextQuestion();
-                    },
-                  ),
-                ),
-              ],
+                        onClick: () {
+                          if (stateNumber >= 1) {
+                            context
+                                .read<QuestionNumberCubit>()
+                                .getPreviousQuestion();
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: RoundedButton(
+                        style: bodyTextStyle.copyWith(
+                            fontSize: 15, color: Colors.white),
+                        title: "Next",
+                        width: double.infinity,
+                        background: primaryColor,
+                        onClick: () {
+                          if (state is SurveyQuestionLoaded) {
+                            if (stateNumber > state.data.question.length) {
+                              print(selectedOptions);
+                            } else {
+                              context
+                                  .read<QuestionNumberCubit>()
+                                  .getNextQuestion();
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           },
         ),
@@ -193,6 +212,7 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
         onPopInvoked: (bool didPop) {
           if (didPop) {
             context.read<TimerCubit>().resetTimer();
+            context.read<QuestionAnswerBloc>().add(OnClearQuestionAnswer());
           }
         },
         child: BlocBuilder<SurveyQuestionBloc, SurveyQuestionState>(
@@ -242,11 +262,6 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
                             ],
                           ),
                         ),
-                        // Text(state.data.question[stateNumber].section),
-                        // Text(state.data.question[stateNumber].questionName),
-                        // Text('Total Sections: ${sections.length}'),
-                        // Text(
-                        //     'Current Section: ${sections.indexOf(state.data.question[stateNumber].section) + 1}'),
                         SizedBox(
                           height: 16,
                         ),
@@ -275,14 +290,25 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
                           child: Column(
                             children: buildOptions(
                                 state.data.question[stateNumber].options,
-                                state.data.question[stateNumber].type),
+                                state.data.question[stateNumber].type,
+                                state.data.question[stateNumber].questionid),
                           ),
                         ),
                       ],
                     );
                   } else {
-                    return Center(
-                      child: Text("Result "),
+                    return BlocBuilder<QuestionAnswerBloc, QuestionAnswerState>(
+                      builder: (context, state) {
+                        List<Answer> list = state.answer;
+
+                        return ListView.builder(
+                            itemCount: list.length,
+                            itemBuilder: (context, index) {
+                              Answer answer = list[index];
+
+                              return ListTile(title: Text(answer.answer));
+                            });
+                      },
                     );
                   }
                 },
@@ -347,8 +373,8 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
                   BlocBuilder<PageSectionCubit, int>(
                     builder: (context, state) {
                       return Text(
-                        sections[state],            style: appTitleTextStyle,
-
+                        sections[state],
+                        style: appTitleTextStyle,
                       );
                     },
                   ),
@@ -445,32 +471,95 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
     );
   }
 
-  List<Widget> buildOptions(List<OptionEntity>? options, String type) {
+  List<Widget> buildOptions(
+      List<OptionEntity>? options, String type, String questionId) {
     if (options == null || options.isEmpty) {
       return []; // Return an empty list if options is null or empty
     }
     return options.map<Widget>((option) {
       switch (type) {
         case 'checkbox':
-          return CheckboxListTile(
-            title: Text(option.optionName),
-            value: false,
-            onChanged: (value) {},
+          return BlocBuilder<QuestionAnswerBloc, QuestionAnswerState>(
+            builder: (context, state) {
+              return CheckboxListTile(
+                title: Text(option.optionName),
+                value: state.answer.any((e) =>
+                    e.question_id == questionId &&
+                    e.answer == option.optionName),
+                onChanged: (bool? value) {
+                  if (value != null) {
+                    if (state.answer.isNotEmpty) {
+                      if (state.answer.any((element) =>
+                          element.question_id.contains(questionId))) {
+                        Answer newAnswer = Answer(
+                            question_id: questionId,
+                            answer:
+                                option.optionName);
+
+                                print('NEW ANSWSER $newAnswer');
+                        context
+                            .read<QuestionAnswerBloc>()
+                            .add(OnUpdateQuestionAnswer(questionId, newAnswer));
+                      }
+                    } else {
+                      Answer newAnswer = Answer(
+                          question_id: questionId, answer: option.optionName);
+                      context
+                          .read<QuestionAnswerBloc>()
+                          .add(OnAddQuestionAnswer(newAnswer));
+                    }
+                  }
+                },
+              );
+            },
           );
         case 'multiple_choice':
-          return RadioListTile(
-            title: Text(option.optionName),
-            value: false,
-            groupValue: null,
-            onChanged: (value) {},
+          return BlocBuilder<QuestionAnswerBloc, QuestionAnswerState>(
+            builder: (context, state) {
+              return RadioListTile(
+                title: Text(option.optionName),
+                value: option.optionName,
+                groupValue: selectedValue,
+                activeColor: Colors.red,
+                onChanged: (value) {
+                  selectedValue = value;
+
+                  print("value $value");
+                  Answer newAnswer = Answer(
+                      question_id: questionId, answer: selectedValue ?? '');
+                  if (state.answer
+                      .any((element) => element.question_id == questionId)) {
+                    print('a');
+                    context
+                        .read<QuestionAnswerBloc>()
+                        .add(OnUpdateQuestionAnswer(questionId, newAnswer));
+                  } else {
+                    print('b');
+
+                    context
+                        .read<QuestionAnswerBloc>()
+                        .add(OnAddQuestionAnswer(newAnswer));
+                  }
+                },
+              );
+            },
           );
         case 'text':
           return TextFormField(
             decoration: InputDecoration(labelText: option.optionName),
-            onChanged: (value) {},
+            onChanged: (value) {
+              // Update the userAnswers list with the entered text
+              // setState(() {
+              //   userAnswers.add(UserAnswer(
+              //     surveyId: widget.surveyId,
+              //     questionId: questionId,
+              //     answer: value,
+              //   ));
+              // });
+            },
           );
         default:
-          return SizedBox(); // Tambahkan widget kosong jika tidak ada jenis yang cocok
+          return SizedBox(); // Add an empty widget if no type matches
       }
     }).toList();
   }
