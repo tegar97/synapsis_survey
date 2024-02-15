@@ -12,7 +12,10 @@ Implement remember me button with credential saved in local storage / preference
 
 
 
-https://github.com/tegar97/synapsis_survey/assets/59114595/17975de8-e328-427f-9d08-2772a7d83394
+https://github.com/tegar97/synapsis_survey/assets/59114595/f8a7ff70-16d8-4289-ad66-3464c44dd478
+
+
+
 
 
 
@@ -34,6 +37,11 @@ Collect all the user answer into data model  like below (15 Point) [Done]
 - Implement Clean Architecture (Data layer, Domain Layer, Presentation Layer) [Done]
 - Using state management like Bloc (Prefferable), GetX, or others. [Done]
 - Implement Dependency Injection [Done]
+
+### Demo Apk
+
+Link download https://drive.google.com/file/d/1UPLI8cBacqZrefehT7BgeUjNd5RpBNkF/view?usp=sharing
+
 
 
 
