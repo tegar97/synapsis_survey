@@ -58,6 +58,11 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
     super.dispose();
   }
 
+  void submitData(surveyId, List<Answer> answer) {
+    //Collect all the user answer into data model
+    UserAnswer userAnswer = UserAnswer(surveyId: surveyId, answer: answer);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,53 +72,103 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
         margin: EdgeInsets.symmetric(vertical: 24, horizontal: 12),
         child: BlocBuilder<SurveyQuestionBloc, SurveyQuestionState>(
           builder: (context, state) {
-            return BlocBuilder<QuestionNumberCubit, int>(
-              builder: (context, stateNumber) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: RoundedOutlineButton(
-                        style: bodyTextStyle.copyWith(
-                            fontSize: 15,
+            if (state is SurveyQuestionLoaded) {
+              return BlocBuilder<QuestionNumberCubit, int>(
+                builder: (context, stateNumber) {
+                  if (stateNumber < state.data.question.length - 1) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: RoundedOutlineButton(
+                            style: bodyTextStyle.copyWith(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700),
+                            title: "Back",
+                            width: double.infinity,
                             color: primaryColor,
-                            fontWeight: FontWeight.w700),
-                        title: "Back",
-                        width: double.infinity,
-                        color: primaryColor,
-                        onClick: () {
-                          if (stateNumber >= 1) {
-                            context
-                                .read<QuestionNumberCubit>()
-                                .getPreviousQuestion();
-                          }
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: RoundedButton(
-                        style: bodyTextStyle.copyWith(
-                            fontSize: 15, color: Colors.white),
-                        title: "Next",
-                        width: double.infinity,
-                        background: primaryColor,
-                        onClick: () {
-                          if (state is SurveyQuestionLoaded) {
-                            if (stateNumber > state.data.question.length) {
-                              print(selectedOptions);
-                            } else {
-                              context
-                                  .read<QuestionNumberCubit>()
-                                  .getNextQuestion();
+                            onClick: () {
+                              if (stateNumber >= 1) {
+                                context
+                                    .read<QuestionNumberCubit>()
+                                    .getPreviousQuestion();
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: RoundedButton(
+                            style: bodyTextStyle.copyWith(
+                                fontSize: 15, color: Colors.white),
+                            title: "Next",
+                            width: double.infinity,
+                            background: primaryColor,
+                            onClick: () {
+                              if (state is SurveyQuestionLoaded) {
+                                if (stateNumber > state.data.question.length) {
+                                  print(selectedOptions);
+                                } else {
+                                  context
+                                      .read<QuestionNumberCubit>()
+                                      .getNextQuestion();
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: RoundedOutlineButton(
+                            style: bodyTextStyle.copyWith(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700),
+                            title: "Back",
+                            width: double.infinity,
+                            color: primaryColor,
+                            onClick: () {
+                              if (stateNumber >= 1) {
+                                context
+                                    .read<QuestionNumberCubit>()
+                                    .getPreviousQuestion();
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        BlocBuilder<QuestionAnswerBloc, QuestionAnswerState>(
+                          builder: (context, questionState) {
+                            if (questionState is QuetionAnswerAdded) {
+                              return Expanded(
+                                child: RoundedButton(
+                                  style: bodyTextStyle.copyWith(
+                                      fontSize: 15, color: Colors.white),
+                                  title: "Submit",
+                                  width: double.infinity,
+                                  background: primaryColor,
+                                  onClick: () {
+                                    submitData(
+                                        widget.surveyId, questionState.answer);
+
+                                  },
+                                ),
+                              );
                             }
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
+                            return SizedBox();
+                          },
+                        ),
+                      ],
+                    );
+                  }
+                },
+              );
+            }
+            return SizedBox();
           },
         ),
       ),
@@ -482,31 +537,28 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
           return BlocBuilder<QuestionAnswerBloc, QuestionAnswerState>(
             builder: (context, state) {
               return CheckboxListTile(
+                                      activeColor: primaryColor,
+
+                checkColor: Colors.white,
                 title: Text(option.optionName),
                 value: state.answer.any((e) =>
                     e.question_id == questionId &&
-                    e.answer == option.optionName),
+                    e.answer.split(', ').contains(option.optionName)),
                 onChanged: (bool? value) {
                   if (value != null) {
-                    if (state.answer.isNotEmpty) {
-                      if (state.answer.any((element) =>
-                          element.question_id.contains(questionId))) {
-                        Answer newAnswer = Answer(
-                            question_id: questionId,
-                            answer:
-                                option.optionName);
+                    Answer newAnswer = Answer(
+                        question_id: questionId, answer: option.optionName);
 
-                                print('NEW ANSWSER $newAnswer');
-                        context
-                            .read<QuestionAnswerBloc>()
-                            .add(OnUpdateQuestionAnswer(questionId, newAnswer));
-                      }
-                    } else {
-                      Answer newAnswer = Answer(
-                          question_id: questionId, answer: option.optionName);
+                    if (state.answer.any((e) =>
+                        e.question_id == questionId &&
+                        e.answer.split(', ').contains(option.optionName))) {
                       context
                           .read<QuestionAnswerBloc>()
-                          .add(OnAddQuestionAnswer(newAnswer));
+                          .add(OnRemoveCheckboxAnswer(questionId, newAnswer));
+                    } else {
+                      context
+                          .read<QuestionAnswerBloc>()
+                          .add(OnAddQuestionAnswer(newAnswer, true));
                     }
                   }
                 },
@@ -520,7 +572,7 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
                 title: Text(option.optionName),
                 value: option.optionName,
                 groupValue: selectedValue,
-                activeColor: Colors.red,
+                activeColor: primaryColor,
                 onChanged: (value) {
                   selectedValue = value;
 
@@ -538,7 +590,7 @@ class _SurveyQuestionPageState extends State<SurveyQuestionPage> {
 
                     context
                         .read<QuestionAnswerBloc>()
-                        .add(OnAddQuestionAnswer(newAnswer));
+                        .add(OnAddQuestionAnswer(newAnswer, false));
                   }
                 },
               );

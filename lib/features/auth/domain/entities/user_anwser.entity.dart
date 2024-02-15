@@ -2,25 +2,22 @@ import 'package:equatable/equatable.dart';
 
 class UserAnswer extends Equatable {
   final String surveyId;
-  final String questionId;
   final List<Answer> answer;
 
   UserAnswer({
     required this.surveyId,
-    required this.questionId,
     required this.answer,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'survey_id': surveyId,
-      'question_id': questionId,
       'answer': answer,
     };
   }
 
   @override
-  List<Object?> get props => [surveyId, questionId, answer];
+  List<Object?> get props => [surveyId,  answer];
 }
 
 class Answer {

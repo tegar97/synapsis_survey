@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         initialRoute: AppRoute.login,
         onGenerateRoute: AppRoute.onGenerateRoute,
         home: const LoginPage(),
-      ),
+      ),  
     );
   }
 }

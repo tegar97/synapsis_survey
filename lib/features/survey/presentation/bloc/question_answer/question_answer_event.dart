@@ -1,7 +1,6 @@
 part of 'question_answer_bloc.dart';
 
 sealed class QuestionAnswerEvent extends Equatable {
-  
   const QuestionAnswerEvent();
 
   @override
@@ -10,8 +9,9 @@ sealed class QuestionAnswerEvent extends Equatable {
 
 class OnAddQuestionAnswer extends QuestionAnswerEvent {
   final Answer answer;
+  final bool isCheckbox;
 
-  const OnAddQuestionAnswer(this.answer);
+  const OnAddQuestionAnswer(this.answer, this.isCheckbox);
 }
 
 class OnUpdateQuestionAnswer extends QuestionAnswerEvent {
@@ -24,7 +24,14 @@ class OnUpdateQuestionAnswer extends QuestionAnswerEvent {
   List<Object> get props => [questionId, answers];
 }
 
+class OnClearQuestionAnswer extends QuestionAnswerEvent {}
 
-class OnClearQuestionAnswer extends QuestionAnswerEvent {
- 
+class OnRemoveCheckboxAnswer extends QuestionAnswerEvent {
+  final String questionId;
+  final Answer answers;
+
+  OnRemoveCheckboxAnswer(this.questionId,this.answers);
+  @override
+  List<Object> get props => [questionId,answers];
+
 }
